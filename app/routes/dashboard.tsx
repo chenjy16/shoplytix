@@ -5,20 +5,14 @@ import StatCard from "~/components/charts/StatCard";
 import LineChart from "~/components/charts/LineChart";
 import BarChart from "~/components/charts/BarChart";
 import PieChart from "~/components/charts/PieChart";
-import { getOrderStats } from "~/models/order";
-import { getProductStats } from "~/models/product";
 import { getSalesAnalytics, getInventoryAnalytics, getCustomerAnalytics } from "~/models/analytics";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const orderStats = await getOrderStats();
-  const productStats = await getProductStats();
   const salesAnalytics = await getSalesAnalytics();
   const inventoryAnalytics = await getInventoryAnalytics();
   const customerAnalytics = await getCustomerAnalytics();
   
   return json({
-    orderStats,
-    productStats,
     salesAnalytics,
     inventoryAnalytics,
     customerAnalytics
@@ -27,8 +21,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Dashboard() {
   const { 
-    orderStats, 
-    productStats, 
     salesAnalytics, 
     inventoryAnalytics, 
     customerAnalytics 
@@ -66,27 +58,27 @@ export default function Dashboard() {
       
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard 
-          title="总订单数" 
-          value={orderStats.totalOrders} 
-          icon="📦" 
-          change={{ value: 8.2, isPositive: true }} 
-        />
-        <StatCard 
-          title="总收入" 
-          value={`¥${orderStats.totalRevenue.toLocaleString()}`} 
+          title="销售总额" 
+          value={`¥${salesAnalytics.monthlySales.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}`} 
           icon="💰" 
           change={{ value: 12.5, isPositive: true }} 
         />
         <StatCard 
-          title="平均订单价值" 
-          value={`¥${orderStats.averageOrderValue.toLocaleString()}`} 
-          icon="🛒" 
+          title="客户留存率" 
+          value={`${salesAnalytics.customerRetention}%`} 
+          icon="🔄" 
           change={{ value: 3.7, isPositive: true }} 
         />
         <StatCard 
-          title="待处理订单" 
-          value={orderStats.pendingOrders} 
-          icon="⏳" 
+          title="订单完成率" 
+          value={`${salesAnalytics.averageOrderCompletion}%`} 
+          icon="✅" 
+          change={{ value: 1.2, isPositive: true }} 
+        />
+        <StatCard 
+          title="客户终身价值" 
+          value={`¥${customerAnalytics.customerLifetimeValue.toLocaleString()}`} 
+          icon="👤" 
         />
       </div>
       
@@ -101,86 +93,63 @@ export default function Dashboard() {
         />
       </div>
       
-      <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">商品概览</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard 
-            title="总商品数" 
-            value={productStats.totalProducts} 
-            icon="🏷️" 
-          />
-          <StatCard 
-            title="低库存商品" 
-            value={productStats.lowStockProducts} 
-            icon="⚠️" 
-          />
-          <StatCard 
-            title="热销品类" 
-            value={productStats.topSellingCategory} 
-            icon="🔥" 
-          />
-          <StatCard 
-            title="本月新品" 
-            value={productStats.newProductsThisMonth} 
-            icon="✨" 
-          />
-        </div>
-      </div>
-      
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <BarChart 
           title="热销商品" 
           data={topProductsData} 
-          color="#10b981"
+          color="#f59e0b"
         />
         <PieChart 
           title="客户细分" 
           data={customerSegmentsData} 
+          color="#8b5cf6"
         />
       </div>
       
-      <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">客户洞察</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">客户留存率</h3>
-            <div className="flex items-center">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                {salesAnalytics.customerRetention}%
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">库存状态</h3>
+          <div className="space-y-4">
+            {inventoryAnalytics.stockLevels.map((item, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-400">{item.product}</span>
+                <div className="w-2/3">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div 
+                      className={`h-2.5 rounded-full ${
+                        (item.current / item.optimal) < 0.5 
+                          ? 'bg-red-500' 
+                          : (item.current / item.optimal) < 0.8 
+                            ? 'bg-yellow-500' 
+                            : 'bg-green-500'
+                      }`} 
+                      style={{ width: `${Math.min(100, (item.current / item.optimal) * 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-xs mt-1">
+                    <span>{item.current}</span>
+                    <span>{item.optimal}</span>
+                  </div>
+                </div>
               </div>
-              <div className="ml-2 text-sm text-green-500">↑ 2.5%</div>
-            </div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              相比上月
-            </p>
+            ))}
           </div>
-          
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">客户终身价值</h3>
-            <div className="flex items-center">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                ¥{customerAnalytics.customerLifetimeValue.toLocaleString()}
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">顶级客户</h3>
+          <div className="space-y-4">
+            {customerAnalytics.topCustomers.map((customer, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 font-medium">
+                    {customer.name.charAt(0)}
+                  </div>
+                  <span className="ml-3 text-gray-700 dark:text-gray-300">{customer.name}</span>
+                </div>
+                <span className="font-medium text-gray-900 dark:text-white">¥{customer.totalSpent.toLocaleString()}</span>
               </div>
-              <div className="ml-2 text-sm text-green-500">↑ 5.8%</div>
-            </div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              相比上季度
-            </p>
-          </div>
-          
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">新客vs回头客</h3>
-            <div className="flex items-center">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                {customerAnalytics.newVsReturning.returning}%
-              </div>
-              <div className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                回头客比例
-              </div>
-            </div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              新客户: {customerAnalytics.newVsReturning.new}%
-            </p>
+            ))}
           </div>
         </div>
       </div>

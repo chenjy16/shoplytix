@@ -3,8 +3,6 @@ import { NavLink } from "@remix-run/react";
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const navigation = [
     { name: "仪表盘", href: "/dashboard", icon: "📊" },
-    { name: "订单管理", href: "/orders", icon: "📦" },
-    { name: "商品管理", href: "/products", icon: "🛍️" },
     { name: "数据分析", href: "/analytics", icon: "📈" },
   ];
 
