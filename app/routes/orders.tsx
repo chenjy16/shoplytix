@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useLoaderData, Link } from "@remix-run/react";
+import { useState, useMemo } from "react";
 import DashboardLayout from "~/components/layout/DashboardLayout";
 import { getOrders, type Order } from "~/models/order";
 
@@ -10,6 +11,38 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Orders() {
   const { orders } = useLoaderData<typeof loader>();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [dateRange, setDateRange] = useState("");
+  
+  // 过滤订单数据
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      const matchSearch = search === "" || 
+        order.id.toLowerCase().includes(search.toLowerCase()) || 
+        order.customerName.toLowerCase().includes(search.toLowerCase());
+      
+      const matchStatus = status === "" || order.status === status;
+      
+      // 简单的日期筛选逻辑
+      let matchDate = true;
+      if (dateRange !== "") {
+        const orderDate = new Date(order.orderDate);
+        const today = new Date();
+        
+        if (dateRange === "today") {
+          matchDate = orderDate.toDateString() === today.toDateString();
+        } else if (dateRange === "yesterday") {
+          const yesterday = new Date(today);
+          yesterday.setDate(today.getDate() - 1);
+          matchDate = orderDate.toDateString() === yesterday.toDateString();
+        }
+        // 可以添加更多日期筛选逻辑
+      }
+      
+      return matchSearch && matchStatus && matchDate;
+    });
+  }, [orders, search, status, dateRange]);
   
   // 获取订单状态对应的样式和中文名称
   const getStatusBadge = (status: Order['status']) => {
@@ -32,18 +65,18 @@ export default function Orders() {
   
   return (
     <DashboardLayout>
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">订单管理</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">订单管理</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             查看和管理所有订单
           </p>
         </div>
-        <div className="flex space-x-2">
-          <button className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+        <div className="flex flex-wrap gap-2">
+          <button className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
             导出数据
           </button>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm font-medium">
             创建订单
           </button>
         </div>
@@ -51,8 +84,8 @@ export default function Orders() {
       
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="relative w-full sm:w-auto">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                   <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
@@ -60,12 +93,18 @@ export default function Orders() {
               </div>
               <input 
                 type="search" 
-                className="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-full sm:w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
                 placeholder="搜索订单..." 
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <select 
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 w-full sm:w-auto dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              >
                 <option value="">所有状态</option>
                 <option value="pending">待处理</option>
                 <option value="processing">处理中</option>
@@ -73,7 +112,11 @@ export default function Orders() {
                 <option value="delivered">已送达</option>
                 <option value="cancelled">已取消</option>
               </select>
-              <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <select 
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 w-full sm:w-auto dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              >
                 <option value="">所有时间</option>
                 <option value="today">今天</option>
                 <option value="yesterday">昨天</option>
@@ -85,7 +128,57 @@ export default function Orders() {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* 移动端卡片视图 */}
+        <div className="block sm:hidden">
+          {filteredOrders.length === 0 ? (
+            <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+              没有找到匹配的订单
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredOrders.map((order) => (
+                <div key={order.id} className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">{order.id}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{order.customerName}</div>
+                    </div>
+                    {getStatusBadge(order.status)}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                    <div>
+                      <div className="text-gray-500 dark:text-gray-400">日期</div>
+                      <div className="font-medium">{new Date(order.orderDate).toLocaleDateString()}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500 dark:text-gray-400">金额</div>
+                      <div className="font-medium">¥{order.totalAmount.toFixed(2)}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500 dark:text-gray-400">商品数量</div>
+                      <div className="font-medium">{order.items.length}</div>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2 mt-2">
+                    <Link to={`/orders/${order.id}`} className="text-blue-600 dark:text-blue-400 text-sm">
+                      查看
+                    </Link>
+                    <button className="text-indigo-600 dark:text-indigo-400 text-sm">
+                      更新状态
+                    </button>
+                    <button className="text-red-600 dark:text-red-400 text-sm">
+                      取消
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* 桌面端表格视图 */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
@@ -113,46 +206,55 @@ export default function Orders() {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {order.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    {order.customerName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    {new Date(order.orderDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    ¥{order.totalAmount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(order.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    {order.items.length}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link to={`/orders/${order.id}`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">
-                      查看
-                    </Link>
-                    <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">
-                      更新状态
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                      取消
-                    </button>
+              {filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    没有找到匹配的订单
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {order.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      {order.customerName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      {new Date(order.orderDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      ¥{order.totalAmount.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(order.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      {order.items.length}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Link to={`/orders/${order.id}`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">
+                        查看
+                      </Link>
+                      <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">
+                        更新状态
+                      </button>
+                      <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                        取消
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700 dark:text-gray-300">
-              显示 <span className="font-medium">1</span> 到 <span className="font-medium">{orders.length}</span> 共 <span className="font-medium">{orders.length}</span> 条结果
+        
+        <div className="px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
+              显示 <span className="font-medium">1</span> 到 <span className="font-medium">{filteredOrders.length}</span> 共 <span className="font-medium">{filteredOrders.length}</span> 条结果
             </div>
             <div className="flex space-x-2">
               <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50" disabled>

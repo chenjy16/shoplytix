@@ -1,7 +1,16 @@
-export default function Header() {
+export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   return (
-    <header className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-      <div>
+    <header className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="flex items-center">
+        <button 
+          className="md:hidden mr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          onClick={onMenuClick}
+        >
+          <span className="sr-only">打开菜单</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         <h2 className="text-lg font-medium text-gray-900 dark:text-white">店铺数据分析</h2>
       </div>
       <div className="flex items-center space-x-4">
