@@ -8,5 +8,22 @@
   "observability": {
     "enabled": true
   },
-  "upload_source_maps": true
+  "upload_source_maps": true,
+  "kv_namespaces": [
+    {
+      "binding": "SHOPIFY_KV_NAMESPACE",
+      "id": "22d3b417edfd4b5f8dee03a102607a19",
+      "preview_id": "f60744b15ac14f9fbe58e81c3ed12315"
+    }
+  ],
+  "vars": {
+    "SHOPIFY_API_KEY": "8f6535772a6bf892d672445383ec2d2e",
+    "SHOPIFY_API_SECRET": "e52e7f60ae4306e400a94a3e0c20328d",
+    "SHOPIFY_APP_URL": "https://shoplytix.chenjianyu944.workers.dev"
+  }
 }
+
+
+
+
+

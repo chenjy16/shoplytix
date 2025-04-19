@@ -1,5 +1,6 @@
 {
   "name": "shoplytix",
+  "type": "module",
   "description": "Build a full-stack web application with Remix.",
   "cloudflare": {
     "label": "Remix Framework Starter",
@@ -17,6 +18,8 @@
     "@remix-run/cloudflare": "2.16.4",
     "@remix-run/react": "2.16.4",
     "@remix-run/server-runtime": "2.16.4",
+    "@shopify/shopify-api": "^8.0.0",
+    "@shopify/shopify-app-remix": "^2.0.0",
     "isbot": "5.1.25",
     "react": "18.3.1",
     "react-dom": "18.3.1"
@@ -24,6 +27,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250404.0",
     "@remix-run/dev": "2.16.4",
+    "@shopify/cli": "^3.59.0",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "@typescript-eslint/eslint-plugin": "8.29.0",
@@ -48,15 +52,13 @@
   "private": true,
   "scripts": {
     "build": "remix vite:build",
-    "cf-typegen": "wrangler types",
-    "deploy": "npm run build && wrangler deploy",
     "dev": "remix vite:dev",
-    "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "preview": "npm run build && wrangler dev",
-    "start": "wrangler dev",
-    "typecheck": "tsc",
-    "typegen": "wrangler types"
-  },
-  "sideEffects": false,
-  "type": "module"
+    "start": "wrangler pages dev ./build/client --compatibility-date=2023-06-21 --compatibility-flag=nodejs_compat",
+    "deploy": "wrangler deploy",
+    "shopify": "shopify app dev",
+    "shopify:build": "shopify app build",
+    "shopify:deploy": "shopify app deploy",
+    "shopify:generate": "shopify app generate extension",
+    "shopify:info": "shopify app info"
+  }
 }

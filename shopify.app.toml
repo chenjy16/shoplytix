@@ -1,0 +1,24 @@
+# 这个文件包含了 Shopify CLI 使用的配置
+# 了解更多：https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "ShopLytix"
+client_id = "8f6535772a6bf892d672445383ec2d2e"
+application_url = "https://shoplytix.chenjianyu944.workers.dev/"
+embedded = true
+
+[access_scopes]
+# 这个应用需要的权限范围
+scopes = "read_products,write_products,read_orders,write_orders,read_customers,read_analytics"
+
+[auth]
+redirect_urls = [
+  "https://shoplytix.chenjianyu944.workers.dev/auth/callback",
+  "https://shoplytix.chenjianyu944.workers.dev/shopify/callback",
+  "https://shoplytix.chenjianyu944.workers.dev/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2023-10"
+
+[pos]
+embedded = false
