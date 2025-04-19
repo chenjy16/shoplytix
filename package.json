@@ -44,7 +44,7 @@
     "typescript": "5.8.2",
     "vite": "5.4.14",
     "vite-tsconfig-paths": "5.1.4",
-    "wrangler": "3.114.4"
+    "wrangler": "^4.12.0"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -54,7 +54,7 @@
     "build": "remix vite:build",
     "dev": "remix vite:dev",
     "start": "wrangler pages dev ./build/client --compatibility-date=2023-06-21 --compatibility-flag=nodejs_compat",
-    "deploy": "wrangler deploy",
+    "deploy": "remix vite:build && wrangler deploy",
     "shopify": "shopify app dev",
     "shopify:build": "shopify app build",
     "shopify:deploy": "shopify app deploy",
