@@ -2,11 +2,12 @@ import { json, LoaderFunction } from "@remix-run/cloudflare";
 import { useLoaderData, Link } from "@remix-run/react";
 import { authenticate } from "~/shopify.server";
 
-export const loader: LoaderFunction = async ({ request }) => {
-  await authenticate.admin(request);
+export const loader: LoaderFunction = async ({ request, context }) => {
+  const { session } = await authenticate(request, context.env);
   
   return json({
     message: "欢迎使用 ShopLytix Shopify 应用",
+    shop: session.shop
   });
 };
 

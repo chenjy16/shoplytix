@@ -32,14 +32,21 @@ export const shopify = ({ env }: { env: Env }) => {
     restResources,
     webhooks: {
       APP_UNINSTALLED: {
-        deliveryMethod: "http",
+        deliveryMethod: "https",
         callbackUrl: "/api/webhooks",
       },
     },
     hooks: {
-      afterAuth: async ({ session }) => {
-        // 应用安装后的钩子
+      afterAuth: async ({ session, request, response }) => {
+        // 注册 webhooks
         shopifyConfig.registerWebhooks({ session });
+        
+        // 获取请求的主机名
+        const host = new URL(request.url).searchParams.get("host");
+        const shop = session.shop;
+        
+        // 重定向到应用主页
+        return response.redirect(`/app?shop=${shop}&host=${host}`);
       },
     },
     future: {

@@ -3,8 +3,6 @@ import {
   vitePlugin as remix,
   cloudflareDevProxyVitePlugin,
 } from "@remix-run/dev";
-// 移除直接导入
-// import tsconfigPaths from "vite-tsconfig-paths";
 import { getLoadContext } from "./load-context";
 
 declare module "@remix-run/cloudflare" {
@@ -30,6 +28,8 @@ export default defineConfig(async () => {
           v3_singleFetch: true,
           v3_lazyRouteDiscovery: true,
         },
+        serverModuleFormat: "esm",
+        buildDirectory: "build", // 确保这里设置正确
       }),
       tsconfigPaths(),
     ],
