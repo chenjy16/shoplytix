@@ -5,9 +5,10 @@ export const action: ActionFunction = async ({ request, context }) => {
   const shopify = getShopify(context.env);
   
   try {
+    console.log("收到 Webhook 请求");
     const { topic, shop, webhookId } = await shopify.authenticate.webhook(request);
     
-    console.log(`处理 webhook: ${topic} 来自商店: ${shop}`);
+    console.log(`处理 webhook: ${topic} 来自商店: ${shop}, ID: ${webhookId}`);
     
     // 处理不同类型的 webhook
     switch (topic) {

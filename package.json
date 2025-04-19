@@ -59,6 +59,7 @@
     "shopify:build": "shopify app build",
     "shopify:deploy": "shopify app deploy",
     "shopify:generate": "shopify app generate extension",
-    "shopify:info": "shopify app info"
+    "shopify:info": "shopify app info",
+    "clean": "rm -rf build .cache"
   }
 }

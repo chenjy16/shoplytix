@@ -14,6 +14,9 @@ declare module "@remix-run/cloudflare" {
 export default defineConfig(async () => {
   // 使用动态导入
   const { default: tsconfigPaths } = await import("vite-tsconfig-paths");
+  // 动态导入 tailwindcss 和 autoprefixer
+  const { default: tailwindcss } = await import("tailwindcss");
+  const { default: autoprefixer } = await import("autoprefixer");
 
   return {
     plugins: [
@@ -33,6 +36,12 @@ export default defineConfig(async () => {
       }),
       tsconfigPaths(),
     ],
+    // 修改 CSS 相关配置，使用动态导入的模块
+    css: {
+      postcss: {
+        plugins: [tailwindcss(), autoprefixer()],
+      },
+    },
     ssr: {
       resolve: {
         conditions: ["workerd", "worker", "browser"],
