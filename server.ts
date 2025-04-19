@@ -1,23 +1,29 @@
 import { createRequestHandler, type ServerBuild } from "@remix-run/cloudflare";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore This file won’t exist if it hasn’t yet been built
-import * as build from "./build/server"; // eslint-disable-line import/no-unresolved
+import * as build from "./build/server"; 
 import { getLoadContext } from "./load-context";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
 
 export default {
   async fetch(request, env, ctx) {
     try {
+      const corsHeaders = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        "Access-Control-Allow-Credentials": "true"
+      };
+      
+      if (request.method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: corsHeaders
+        });
+      }
+      
       const loadContext = getLoadContext({
         request,
         context: {
           cloudflare: {
-            // This object matches the return value from Wrangler's
-            // `getPlatformProxy` used during development via Remix's
-            // `cloudflareDevProxyVitePlugin`:
-            // https://developers.cloudflare.com/workers/wrangler/api/#getplatformproxy
             cf: request.cf,
             ctx: {
               waitUntil: ctx.waitUntil.bind(ctx),
@@ -28,7 +34,18 @@ export default {
           },
         },
       });
-      return await handleRemixRequest(request, loadContext);
+      
+      const response = await handleRemixRequest(request, loadContext);
+      const newHeaders = new Headers(response.headers);
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        newHeaders.set(key, value);
+      });
+      
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders
+      });
     } catch (error) {
       console.log(error);
       return new Response("An unexpected error occurred", { status: 500 });

@@ -1,11 +1,31 @@
-import type { MetaFunction } from "@remix-run/cloudflare";
+import { LoaderFunction, redirect } from "@remix-run/cloudflare";
 import { Link } from "@remix-run/react";
+import type { MetaFunction } from "@remix-run/cloudflare";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "ShopLytix - 店铺数据分析平台" },
     { name: "description", content: "为您的店铺提供全面的数据分析和可视化服务" },
   ];
+};
+
+// 添加 loader 函数来处理 Shopify 参数
+export const loader: LoaderFunction = async ({ request }) => {
+  const url = new URL(request.url);
+  
+  // 检查是否有 Shopify 相关参数
+  if (url.searchParams.has("shop") && url.searchParams.has("host")) {
+    const shop = url.searchParams.get("shop");
+    const host = url.searchParams.get("host");
+    const hmac = url.searchParams.get("hmac");
+    const timestamp = url.searchParams.get("timestamp");
+    
+    // 重定向到授权路由
+    return redirect(`/auth?shop=${shop}&host=${host}&hmac=${hmac}&timestamp=${timestamp}`);
+  }
+  
+  // 如果没有 Shopify 参数，正常显示首页
+  return null;
 };
 
 export default function Index() {
