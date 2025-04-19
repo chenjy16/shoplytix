@@ -29,41 +29,15 @@ export default function App() {
   
   console.log("渲染 App 组件，商店:", shop, "host:", host);
   
-  // 修改 App Bridge 初始化脚本
+  // 修改后的 App Bridge 初始化脚本
   const shopifyAppBridgeScript = `
+    <script data-api-key="${apiKey}"></script>
+    <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
     <script>
-      window.shopify = {
+      window.app = AppBridge.default({
         apiKey: "${apiKey}",
-        host: "${host || ''}",
-        shop: "${shop}",
+        host: "${host}",
         forceRedirect: true
-      };
-    </script>
-    <script src="https://cdn.shopify.com/shopifycloud/app-bridge/3.7.7/app-bridge.js" defer></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        if (window.shopify && window.shopify.host) {
-          try {
-            var AppBridge = window['app-bridge'];
-            var createApp = AppBridge.default;
-            var app = createApp({
-              apiKey: window.shopify.apiKey,
-              host: window.shopify.host,
-              forceRedirect: true
-            });
-            
-            // 添加调试信息
-            console.log("App Bridge 初始化完成", {
-              apiKey: window.shopify.apiKey,
-              host: window.shopify.host,
-              shop: window.shopify.shop
-            });
-          } catch (error) {
-            console.error("App Bridge 初始化失败:", error);
-          }
-        } else {
-          console.error("shopify 配置对象不存在或 host 为空");
-        }
       });
     </script>
   `;

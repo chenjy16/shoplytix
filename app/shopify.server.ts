@@ -29,12 +29,20 @@ export const shopify = ({ env }: { env: Env }) => {
       "read_analytics"
     ],
     appUrl: env.SHOPIFY_APP_URL || "",
-    shopifyApiVersion: "2025-04", // 更新为最新版本
+    shopifyApiVersion: "2023-10",
     sessionStorage: new CloudflareKVSessionStorage(kvNamespace),
     distribution: "app",
     restResources,
     webhooks: {
       APP_UNINSTALLED: {
+        deliveryMethod: "https",
+        callbackUrl: "/api/webhooks",
+      },
+      PRODUCTS_CREATE: {
+        deliveryMethod: "https",
+        callbackUrl: "/api/webhooks",
+      },
+      ORDERS_CREATE: {
         deliveryMethod: "https",
         callbackUrl: "/api/webhooks",
       },
@@ -55,7 +63,7 @@ export const shopify = ({ env }: { env: Env }) => {
         // 重定向到应用主页
         return response.redirect(`/app?shop=${shop}&host=${host}`);
       },
-    },
+    }, // 添加逗号
     future: {
       unstable_newEmbeddedAuthStrategy: true,
     },

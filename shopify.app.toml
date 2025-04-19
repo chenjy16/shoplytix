@@ -11,7 +11,8 @@ scopes = "read_products,write_products,read_orders,write_orders,read_customers,r
 redirect_urls = [
   "https://shoplytix.chenjianyu944.workers.dev/auth/callback",
   "https://shoplytix.chenjianyu944.workers.dev/auth/tokens",
-  "https://shoplytix.chenjianyu944.workers.dev/api/auth/callback"
+  "https://shoplytix.chenjianyu944.workers.dev/api/auth/callback",
+  "https://shoplytix.chenjianyu944.workers.dev/auth?shop={shop}&host={host}"
 ]
 
 [webhooks]
