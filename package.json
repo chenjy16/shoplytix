@@ -53,7 +53,7 @@
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
-    "start": "wrangler pages dev ./build/client --compatibility-date=2023-06-21 --compatibility-flag=nodejs_compat",
+    "start": "wrangler  dev ./build/client --compatibility-date=2023-06-21 --compatibility-flag=nodejs_compat",
     "deploy": "remix vite:build && wrangler deploy",
     "shopify": "shopify app dev",
     "shopify:build": "shopify app build",
